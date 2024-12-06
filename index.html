@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature and Humidity Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1> Welcome to My World</h1>
+
+<h2>New Life New Test</h2>
+
+
+<h2>Real Time Data Records</h2>
+<table id="recordsTable">
+    <thead>
+        <tr>
+            <th>Cullum</th>
+            <th>Time</th>
+            <th>Temperature (°C)</th>
+            <th>Humidity (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Records will appear here -->
+    </tbody>
+</table>
+
+<button id="resetButton">Reset Records</button>
+
+<script>
+    // Save records to local storage
+    const saveRecords = (records) => localStorage.setItem('records', JSON.stringify(records));
+
+    // Load records from local storage
+    const loadRecords = () => JSON.parse(localStorage.getItem('records')) || [];
+
+    // Add a record to the table (ascending order)
+    const addRecordToTable = (record, serialNumber) => {
+        const tableBody = document.getElementById('recordsTable').querySelector('tbody');
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${serialNumber}</td>
+            <td>${record.time}</td>
+            <td>${record.temperature}</td>
+            <td>${record.humidity}</td>
+        `;
+        tableBody.appendChild(newRow); // Add at the bottom of the table
+    };
+
+    // Update the records table
+    const updateTable = (records) => {
+        const tableBody = document.getElementById('recordsTable').querySelector('tbody');
+        tableBody.innerHTML = ''; // Clear the table
+        records.forEach((record, index) => {
+            addRecordToTable(record, index + 1); // Add serial number starting from 1
+        });
+    };
+
+    // Initialize records on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Load existing records
+        let records = loadRecords();
+
+        // Get query parameters from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('temperature') && urlParams.has('humidity')) {
+            const temperature = urlParams.get('temperature');
+            const humidity = urlParams.get('humidity');
+            const time = new Date().toLocaleString();
+
+            // Create a new record
+            const newRecord = { time, temperature, humidity };
+
+            // Add the new record to the array
+            records.push(newRecord); // Add to the end of the array (ascending order)
+
+            // Save updated records to local storage
+            saveRecords(records);
+
+            // Update the table with the new records
+            updateTable(records);
+
+            // Clear the query string from the URL
+            history.replaceState(null, '', window.location.pathname);
+        } else {
+            // Load records when page is loaded and populate the table
+            updateTable(records);
+        }
+
+        // Set up the reset button
+        document.getElementById('resetButton').addEventListener('click', () => {
+            localStorage.removeItem('records');
+            document.getElementById('recordsTable').querySelector('tbody').innerHTML = '';
+        });
+    });
+</script>
+
+</body>
+</html>
+
