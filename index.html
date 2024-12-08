@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,20 +37,23 @@
         button:hover {
             background-color: #45a049;
         }
+        #buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
     </style>
 </head>
 <body>
 
-<h1> Welcome to My World</h1>
-
+<h1>Welcome to My World</h1>
 <h2>New Life New Test</h2>
-
-
 <h2>Real Time Data Records</h2>
+
 <table id="recordsTable">
     <thead>
         <tr>
-            <th>Cullum</th>
+            <th>Serial No.</th>
             <th>Time</th>
             <th>Temperature (°C)</th>
             <th>Humidity (%)</th>
@@ -60,8 +64,12 @@
     </tbody>
 </table>
 
-<button id="resetButton">Reset Records</button>
+<div id="buttons-container">
+    <button id="resetButton">Reset Records</button>
+    <button id="downloadButton">Download Excel</button>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
     // Save records to local storage
     const saveRecords = (records) => localStorage.setItem('records', JSON.stringify(records));
@@ -69,7 +77,7 @@
     // Load records from local storage
     const loadRecords = () => JSON.parse(localStorage.getItem('records')) || [];
 
-    // Add a record to the table (ascending order)
+    // Add a record to the table
     const addRecordToTable = (record, serialNumber) => {
         const tableBody = document.getElementById('recordsTable').querySelector('tbody');
         const newRow = document.createElement('tr');
@@ -79,7 +87,7 @@
             <td>${record.temperature}</td>
             <td>${record.humidity}</td>
         `;
-        tableBody.appendChild(newRow); // Add at the bottom of the table
+        tableBody.appendChild(newRow);
     };
 
     // Update the records table
@@ -89,6 +97,39 @@
         records.forEach((record, index) => {
             addRecordToTable(record, index + 1); // Add serial number starting from 1
         });
+    };
+
+    // Automatically refresh table data every 5 seconds
+    const refreshData = () => {
+        const records = loadRecords();
+        updateTable(records);
+    };
+    setInterval(refreshData, 5000); // Refresh every 5 seconds
+
+    // Download table as Excel file
+    const downloadExcel = () => {
+        const records = loadRecords();
+        if (records.length === 0) {
+            alert("No data to export!");
+            return;
+        }
+
+        // Create a worksheet
+        const worksheet = XLSX.utils.json_to_sheet(records, {
+            header: ["time", "temperature", "humidity"],
+        });
+
+        // Add headers
+        worksheet["A1"].v = "Time";
+        worksheet["B1"].v = "Temperature (°C)";
+        worksheet["C1"].v = "Humidity (%)";
+
+        // Create a new workbook and add the worksheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Records");
+
+        // Export to Excel file
+        XLSX.writeFile(workbook, "Temperature_Humidity_Records.xlsx");
     };
 
     // Initialize records on page load
@@ -107,7 +148,7 @@
             const newRecord = { time, temperature, humidity };
 
             // Add the new record to the array
-            records.push(newRecord); // Add to the end of the array (ascending order)
+            records.push(newRecord);
 
             // Save updated records to local storage
             saveRecords(records);
@@ -118,18 +159,20 @@
             // Clear the query string from the URL
             history.replaceState(null, '', window.location.pathname);
         } else {
-            // Load records when page is loaded and populate the table
+            // Populate the table with existing records
             updateTable(records);
         }
 
-        // Set up the reset button
+        // Reset button functionality
         document.getElementById('resetButton').addEventListener('click', () => {
             localStorage.removeItem('records');
             document.getElementById('recordsTable').querySelector('tbody').innerHTML = '';
         });
+
+        // Download button functionality
+        document.getElementById('downloadButton').addEventListener('click', downloadExcel);
     });
 </script>
 
 </body>
 </html>
-
