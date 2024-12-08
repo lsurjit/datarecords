@@ -47,7 +47,7 @@
 <body>
 
 <h1>Welcome to My World</h1>
-<h2>New Life New Test</h2>
+<h2>New Life</h2>
 <h2>Real Time Data Records</h2>
 
 <table id="recordsTable">
@@ -99,12 +99,12 @@
         });
     };
 
-    // Automatically refresh table data every 5 seconds
+    // Automatically refresh table data every seconds
     const refreshData = () => {
         const records = loadRecords();
         updateTable(records);
     };
-    setInterval(refreshData, 5000); // Refresh every 5 seconds
+    setInterval(refreshData, 1000); // Refresh every 5 seconds
 
     // Download table as Excel file
     const downloadExcel = () => {
